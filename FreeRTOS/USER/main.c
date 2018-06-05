@@ -14,41 +14,21 @@
  ×÷Õß£ºÕıµãÔ­×Ó @ALIENTEK
 ************************************************/
 
-//ÈÎÎñÓÅÏÈ¼¶
-#define START_TASK_PRIO		1
-//ÈÎÎñ¶ÑÕ»´óĞ¡	
-#define START_STK_SIZE 		128  
-//ÈÎÎñ¾ä±ú
-TaskHandle_t StartTask_Handler;
-//ÈÎÎñº¯Êı
-void start_task(void *pvParameters);
+#define START_TASK_STACK  120
+#define START_TASK_PRIO   1
+void start_task(void* pvParameters);
+TaskHandle_t StartTask_Handle;
 
-//ÈÎÎñÓÅÏÈ¼¶
-#define LED0_TASK_PRIO		2
-//ÈÎÎñ¶ÑÕ»´óĞ¡	
-#define LED0_STK_SIZE 		50  
-//ÈÎÎñ¾ä±ú
-TaskHandle_t LED0Task_Handler;
-//ÈÎÎñº¯Êı
-void led0_task(void *pvParameters);
 
-//ÈÎÎñÓÅÏÈ¼¶
-#define LED1_TASK_PRIO		3
-//ÈÎÎñ¶ÑÕ»´óĞ¡	
-#define LED1_STK_SIZE 		50  
-//ÈÎÎñ¾ä±ú
-TaskHandle_t LED1Task_Handler;
-//ÈÎÎñº¯Êı
-void led1_task(void *pvParameters);
+#define TASK1_LED_STACK  120
+#define TASK1_LED_PRIO   2
+void task1_LED(void* pvParameters);
+TaskHandle_t Task1LED_Handle;	
 
-//ÈÎÎñÓÅÏÈ¼¶
-#define FLOAT_TASK_PRIO		4
-//ÈÎÎñ¶ÑÕ»´óĞ¡	
-#define FLOAT_STK_SIZE 		128
-//ÈÎÎñ¾ä±ú
-TaskHandle_t FLOATTask_Handler;
-//ÈÎÎñº¯Êı
-void float_task(void *pvParameters);
+#define TASK2_LED_STACK  120
+#define TASK2_LED_PRIO   3
+TaskHandle_t Task2LED_Handle;	
+void task2_LED(void* pvParameters);
 
 int main(void)
 { 
@@ -56,77 +36,69 @@ int main(void)
 	delay_init(168);		//³õÊ¼»¯ÑÓÊ±º¯Êı
 	uart_init(115200);     	//³õÊ¼»¯´®¿Ú
 	LED_Init();		        //³õÊ¼»¯LED¶Ë¿Ú
-	
-	//´´½¨¿ªÊ¼ÈÎÎñ
-    xTaskCreate((TaskFunction_t )start_task,            //ÈÎÎñº¯Êı
-                (const char*    )"start_task",          //ÈÎÎñÃû³Æ
-                (uint16_t       )START_STK_SIZE,        //ÈÎÎñ¶ÑÕ»´óĞ¡
-                (void*          )NULL,                  //´«µİ¸øÈÎÎñº¯ÊıµÄ²ÎÊı
-                (UBaseType_t    )START_TASK_PRIO,       //ÈÎÎñÓÅÏÈ¼¶
-                (TaskHandle_t*  )&StartTask_Handler);   //ÈÎÎñ¾ä±ú              
+	xTaskCreate(	(TaskFunction_t ) start_task,
+								(char *					) "start_task",
+								(uint16_t				) START_TASK_STACK,
+								(void *					) NULL,
+								(UBaseType_t		) START_TASK_PRIO,
+								(TaskHandle_t*	) &StartTask_Handle ) ;
+														
+        
     vTaskStartScheduler();          //¿ªÆôÈÎÎñµ÷¶È
 }
  
-//¿ªÊ¼ÈÎÎñÈÎÎñº¯Êı
-void start_task(void *pvParameters)
+void start_task(void * pvParameters)//¿ªÊ¼ÈÎÎñ¡
 {
-    taskENTER_CRITICAL();           //½øÈëÁÙ½çÇø
-    //´´½¨LED0ÈÎÎñ
-    xTaskCreate((TaskFunction_t )led0_task,     	
-                (const char*    )"led0_task",   	
-                (uint16_t       )LED0_STK_SIZE, 
-                (void*          )NULL,				
-                (UBaseType_t    )LED0_TASK_PRIO,	
-                (TaskHandle_t*  )&LED0Task_Handler);   
-    //´´½¨LED1ÈÎÎñ
-    xTaskCreate((TaskFunction_t )led1_task,     
-                (const char*    )"led1_task",   
-                (uint16_t       )LED1_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )LED1_TASK_PRIO,
-                (TaskHandle_t*  )&LED1Task_Handler);        
-    //¸¡µã²âÊÔÈÎÎñ
-    xTaskCreate((TaskFunction_t )float_task,     
-                (const char*    )"float_task",   
-                (uint16_t       )FLOAT_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )FLOAT_TASK_PRIO,
-                (TaskHandle_t*  )&FLOATTask_Handler);  
-    vTaskDelete(StartTask_Handler); //É¾³ı¿ªÊ¼ÈÎÎñ
-    taskEXIT_CRITICAL();            //ÍË³öÁÙ½çÇø
+		xTaskCreate((TaskFunction_t ) task1_LED,
+								(char *					) "task1_LED",
+								(uint16_t				) TASK1_LED_STACK ,
+								(void *					) NULL,
+								(UBaseType_t		) TASK1_LED_PRIO,
+								(TaskHandle_t*	) &Task1LED_Handle ) ;
+								
+		xTaskCreate((TaskFunction_t ) task2_LED,
+								(char *					) "task2_LED",
+								(uint16_t				) TASK2_LED_STACK ,
+								(void *					) NULL,
+								(UBaseType_t		) TASK2_LED_PRIO,
+								(TaskHandle_t*	) &Task2LED_Handle ) ;
+		vTaskDelete(NULL);//Startask_Handle
 }
 
-//LED0ÈÎÎñº¯Êı 
-void led0_task(void *pvParameters)
+void task1_LED(void* pvParameters)
 {
-    while(1)
-    {
-        LED0=~LED0;
-        vTaskDelay(500);
-    }
-}   
-
-//LED1ÈÎÎñº¯Êı
-void led1_task(void *pvParameters)
-{
-    while(1)
-    {
-        LED1=0;
-        vTaskDelay(200);
-        LED1=1;
-        vTaskDelay(800);
-    }
-}
-
-//¸¡µã²âÊÔÈÎÎñ
-void float_task(void *pvParameters)
-{
-	static float float_num=0.00;
+	u8 task1_num=0;
 	while(1)
 	{
-		float_num+=0.01f;
-		printf("float_numµÄÖµÎª: %.4f\r\n",float_num);
-        vTaskDelay(1000);
+		task1_num++;
+		//printf("task1_num:%d\r\n",task1_num);
+		if(task1_num==5)
+		{
+			vTaskDelete(Task2LED_Handle);
+			printf("Del_Task2!!\r\n");
+		}
+		LED0=0;
+		vTaskDelay(200);
+		LED0=1;
+		vTaskDelay(800);
+		printf("task1_num:%d\r\n",task1_num);
+		
+	}
+}
+
+
+void task2_LED(void* pvParameters)
+{
+	u8 task2_num=0;
+	while(1)
+	{
+		task2_num++;
+		
+		LED1=0;
+		vTaskDelay(500);
+		LED1=1;
+		vTaskDelay(500);
+		printf("task2_num:%d\r\n",task2_num);
 	}
 }
 
