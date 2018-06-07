@@ -2,6 +2,7 @@
 #include "delay.h"
 #include "usart.h"
 #include "led.h"
+#include "key.h"
 #include "FreeRTOS.h"
 #include "task.h"
 /************************************************
@@ -30,12 +31,18 @@ TaskHandle_t Task1LED_Handle;
 TaskHandle_t Task2LED_Handle;	
 void task2_LED(void* pvParameters);
 
+#define KEY_TASK_STACK  120
+#define KEY_TASK_PRIO   4
+TaskHandle_t Key_Task_Handle;	
+void key_task(void* pvParameters);
+
 int main(void)
 { 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);//ÉèÖÃÏµÍ³ÖÐ¶ÏÓÅÏÈ¼¶·Ö×é4
 	delay_init(168);		//³õÊ¼»¯ÑÓÊ±º¯Êý
 	uart_init(115200);     	//³õÊ¼»¯´®¿Ú
 	LED_Init();		        //³õÊ¼»¯LED¶Ë¿Ú
+	Key_Init();
 	xTaskCreate(	(TaskFunction_t ) start_task,
 								(char *					) "start_task",
 								(uint16_t				) START_TASK_STACK,
@@ -62,6 +69,13 @@ void start_task(void * pvParameters)//¿ªÊ¼ÈÎÎñ¡
 								(void *					) NULL,
 								(UBaseType_t		) TASK2_LED_PRIO,
 								(TaskHandle_t*	) &Task2LED_Handle ) ;
+								
+		xTaskCreate((TaskFunction_t ) key_task,
+								(char *					) "key_task",
+								(uint16_t				) KEY_TASK_STACK ,
+								(void *					) NULL,
+								(UBaseType_t		) KEY_TASK_PRIO,
+								(TaskHandle_t*	) &Key_Task_Handle ) ;
 		vTaskDelete(NULL);//Startask_Handle
 }
 
@@ -72,11 +86,11 @@ void task1_LED(void* pvParameters)
 	{
 		task1_num++;
 		//printf("task1_num:%d\r\n",task1_num);
-		if(task1_num==5)
-		{
-			vTaskDelete(Task2LED_Handle);
-			printf("Del_Task2!!\r\n");
-		}
+//		if(task1_num==5)
+//		{
+//			vTaskDelete(Task2LED_Handle);
+//			printf("Del_Task2!!\r\n");
+//		}
 		LED0=0;
 		vTaskDelay(200);
 		LED0=1;
@@ -100,6 +114,30 @@ void task2_LED(void* pvParameters)
 		vTaskDelay(500);
 		printf("task2_num:%d\r\n",task2_num);
 	}
+}
+
+void key_task(void* pvParameters)
+{
+	u8 key;
+	while(1)
+	{
+		key = Key_Scan(0);
+		switch(key)
+		{
+			case KEY0_PRES:
+				vTaskSuspend(Task1LED_Handle);
+				printf("Suspend task1");
+			break;
+			case KEY1_PRES:
+				vTaskResume(Task1LED_Handle);
+				printf("Resume task1");
+			break;
+			case WKUP_PRES:
+				break;
+		}
+		vTaskDelay(10);
+	}
+	
 }
 
 

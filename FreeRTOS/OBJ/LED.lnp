@@ -3,6 +3,7 @@
 "..\obj\stm32f4xx_it.o"
 "..\obj\system_stm32f4xx.o"
 "..\obj\led.o"
+"..\obj\key.o"
 "..\obj\delay.o"
 "..\obj\sys.o"
 "..\obj\usart.o"
